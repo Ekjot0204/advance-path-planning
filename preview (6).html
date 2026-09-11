@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Across Industries</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:Inter,Arial,sans-serif;background:#07111f;color:#eef5ff;line-height:1.6}
+nav{position:fixed;top:0;left:0;right:0;z-index:20;display:flex;justify-content:space-between;align-items:center;padding:18px 7%;background:rgba(7,17,31,.88);backdrop-filter:blur(14px);border-bottom:1px solid #1b2b40}
+.logo{font-size:1.25rem;font-weight:800;color:#65d9ff}
+nav a{color:#d9e6f5;text-decoration:none;margin-left:24px;font-size:.95rem}
+nav a:hover{color:#65d9ff}
+.hero{min-height:100vh;display:flex;align-items:center;padding:120px 7% 70px;background:radial-gradient(circle at 75% 25%,#17456d 0,transparent 32%),linear-gradient(135deg,#07111f,#0b1830)}
+.hero-content{max-width:780px}
+.badge{display:inline-block;padding:8px 14px;border:1px solid #245b80;border-radius:30px;color:#65d9ff;background:#0c2438;margin-bottom:22px}
+h1{font-size:clamp(3rem,7vw,6rem);line-height:.98;margin-bottom:24px}
+.gradient{color:#65d9ff}
+.hero p{font-size:1.15rem;color:#aebed0;max-width:650px;margin-bottom:32px}
+.btn{display:inline-block;padding:13px 22px;border-radius:10px;text-decoration:none;font-weight:700;margin-right:10px}
+.primary{background:#65d9ff;color:#06111e}.secondary{border:1px solid #37516c;color:#fff}
+section{padding:90px 7%}
+.section-head{max-width:700px;margin-bottom:42px}
+.section-head h2{font-size:2.5rem;margin-bottom:10px}
+.section-head p{color:#9eb0c4}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.card{background:#0d1b2d;border:1px solid #1d3148;border-radius:18px;padding:28px;transition:.25s;cursor:pointer}
+.card:hover{transform:translateY(-7px);border-color:#65d9ff;box-shadow:0 15px 40px rgba(0,0,0,.22)}
+.icon{font-size:2.1rem;margin-bottom:15px}
+.card h3{font-size:1.3rem;margin-bottom:10px}
+.card p{color:#aebdcd;font-size:.95rem}
+.learn{margin-top:18px;color:#65d9ff;font-weight:700}
+#details{background:#091525}
+.detail{display:none;max-width:900px;background:#0d1b2d;border:1px solid #23415e;border-radius:20px;padding:35px}
+.detail.active{display:block}
+.detail h3{font-size:2rem;margin-bottom:12px}
+.detail p{color:#b8c7d7;margin-bottom:18px}
+.detail ul{padding-left:22px;color:#dce7f2}
+.detail li{margin:8px 0}
+.close{float:right;background:none;border:1px solid #34516d;color:#fff;padding:7px 12px;border-radius:8px;cursor:pointer}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:40px}
+.stat{padding:25px;border-left:3px solid #65d9ff;background:#0d1b2d}
+.stat strong{display:block;font-size:2rem}
+.stat span{color:#9eb0c4}
+footer{text-align:center;padding:35px 7%;border-top:1px solid #1b2b40;color:#8497aa}
+@media(max-width:800px){.grid{grid-template-columns:1fr 1fr}.stats{grid-template-columns:1fr}nav a{margin-left:10px}}
+@media(max-width:560px){.grid{grid-template-columns:1fr}nav{padding:15px 5%}nav .links{display:none}section{padding:70px 5%}}
+</style>
+
+
+
+
+<style>
+.game-wrap{max-width:980px;margin:24px auto;background:#07111e;border:1px solid #20364d;border-radius:22px;padding:16px;box-shadow:0 20px 60px rgba(0,0,0,.28)}
+.game-hud{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:12px}
+.game-hud div{background:#0d1b2d;border:1px solid #20364d;border-radius:12px;padding:10px 12px}
+.game-hud span{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.08em;opacity:.65}
+.game-hud strong{display:block;margin-top:4px;font-size:18px}
+#driveGame{display:block;width:100%;height:auto;background:#1c2935;border-radius:16px;border:1px solid #29435a}
+.game-controls{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+.game-status{margin-top:14px;padding:12px 14px;border-radius:12px;background:#0d1b2d;border-left:4px solid #65d9ff}
+.game-logic{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:20px auto;max-width:980px}
+.game-logic>div{padding:18px;border-radius:16px;background:#f5f7fa;color:#16202a}
+.game-logic p{margin:7px 0 0;line-height:1.55;font-size:14px}
+@media(max-width:700px){.game-hud{grid-template-columns:repeat(2,1fr)}.game-logic{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<nav>
+  <div class="logo">AI<span style="color:white">360</span></div>
+  <div class="links">
+    <a href="#home">Home</a><a href="#simulation">Live Simulation</a><a href="#impact">Impact</a>
+  </div>
+</nav>
+
+<header class="hero" id="home">
+  <div class="hero-content">
+    <div class="badge">Artificial Intelligence • Real-world Applications</div>
+    <h1>AI is changing<br><span class="gradient">every industry.</span></h1>
+    <p>Explore how artificial intelligence makes work faster, smarter and more efficient — from factories and classrooms to banks, courts and everyday society.</p>
+    <a class="btn secondary" href="#impact">See Impact</a>
+  </div>
+</header>
+
+<section id="simulation" class="simulation-section">
+  <div class="section-head">
+    <h2>Live Adaptive Path Planning Simulation</h2>
+    <p>Watch the ego vehicle drive autonomously through a busy single-lane Indian road. The vehicle detects obstacles, brakes, checks surrounding traffic, and safely moves away from hazards without user input.</p>
+  </div>
+
+  <div class="game-wrap">
+    <div class="game-hud">
+      <div><span>Vehicle Speed</span><strong id="gameSpeed">0</strong> km/h</div>
+      <div><span>AI Action</span><strong id="gameAction">READY</strong></div>
+      <div><span>Detected Object</span><strong id="gameDetected">None</strong></div>
+      <div><span>Distance</span><strong id="gameDistance">—</strong></div>
+    </div>
+
+    <canvas id="driveGame" width="900" height="560" aria-label="Autonomous driving simulation"></canvas>
+
+    <div class="game-controls">
+      <button type="button" id="gameStart" class="sim-btn primary">▶ Start Simulation</button>
+      <button type="button" id="gamePause" class="sim-btn">Ⅱ Pause</button>
+      <button type="button" id="gameReset" class="sim-btn">↻ Reset</button>
+    </div>
+
+    <div id="gameStatus" class="game-status" aria-live="polite">
+      Press Start Simulation. The vehicle will drive and avoid obstacles automatically.
+    </div>
+  </div>
+
+  <div class="game-logic">
+    <div><b>Obstacle from the front</b><p>The AI detects the obstacle, reduces speed, calculates a safe lateral path and moves away from it when clearance is available.</p></div>
+    <div><b>Traffic behind</b><p>Rear traffic is tracked before a manoeuvre. The vehicle avoids sudden steering when another vehicle is too close behind.</p></div>
+    <div><b>Front + back blocked</b><p>If the road is blocked in front and traffic is too close behind, the vehicle stops and waits until a safe gap appears.</p></div>
+  </div>
+</section>
+
+
+<style>
+.simulation-section{background:#06101d}
+.scenario-tabs{display:flex;gap:8px;flex-wrap:wrap;margin:22px 0}
+.scenario{padding:10px 14px;border:1px solid #263d55;background:#0c1a2b;color:#b9c9da;border-radius:9px;cursor:pointer}
+.scenario.active{background:#123b59;color:#65d9ff;border-color:#65d9ff}
+.sim-controls{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px}
+.sim-btn{padding:12px 17px;border-radius:10px;border:1px solid #37516c;background:#0d1b2d;color:#fff;font-weight:700;cursor:pointer}
+.sim-btn.primary{background:#65d9ff;color:#06111e;border-color:#65d9ff}
+.road-sim{position:relative;border:1px solid #203a53;border-radius:20px;overflow:hidden;background:#0b1725}
+.road-surface{height:560px;position:relative;overflow:hidden;background:linear-gradient(90deg,#0b1725 0 22%,#323b43 22% 78%,#0b1725 78%)}
+.road-edge{position:absolute;top:0;bottom:0;width:4px;background:#f1d46b;z-index:2}.road-edge.left{left:22%}.road-edge.right{right:22%}
+.lane-mark{position:absolute;left:49.5%;width:8px;height:58px;background:#e7e7df;border-radius:3px;opacity:.75}
+.m1{top:-70px}.m2{top:50px}.m3{top:170px}.m4{top:290px}.m5{top:410px}.m6{top:530px}
+.road-sim.running .lane-mark{animation:roadMove .75s linear infinite}.road-sim.running .m2{animation-delay:-.2s}.road-sim.running .m3{animation-delay:-.4s}.road-sim.running .m4{animation-delay:-.6s}.road-sim.running .m5{animation-delay:-.1s}.road-sim.running .m6{animation-delay:-.3s}
+@keyframes roadMove{from{transform:translateY(-120px)}to{transform:translateY(120px)}}
+.road-label{padding:10px 15px;background:#0d1b2d;color:#91a7bb;font-size:.8rem}.road-label.top{text-align:right}.road-label.bottom{text-align:left}
+.ego,.object{position:absolute;z-index:6;font-size:43px;line-height:1;filter:drop-shadow(0 5px 5px #0008);transition:left .4s,top .4s}
+.ego{left:47%;bottom:58px}.ego span{display:block;font-size:9px;text-align:center;color:#65d9ff;font-weight:bold}
+.object{display:none}.object.parked{display:block}.p1{left:27%;top:190px}.p2{right:27%;top:270px}.frontcar{left:47%;top:115px}.cow{left:55%;top:205px}.pothole{left:46%;top:335px}.bike{left:52%;top:390px}.rearcar{left:47%;bottom:145px}
+.detection-zone{position:absolute;left:31%;right:31%;top:35px;height:290px;border:2px dashed #65d9ff66;border-radius:35%;background:#65d9ff0b;z-index:1}
+.road-sim.scenario-front .p1,.road-sim.scenario-front .p2,.road-sim.scenario-front .cow,.road-sim.scenario-front .pothole,.road-sim.scenario-front .bike{display:none}
+.road-sim.scenario-front .frontcar{display:block}
+.road-sim.scenario-both .p1,.road-sim.scenario-both .p2,.road-sim.scenario-both .cow,.road-sim.scenario-both .pothole,.road-sim.scenario-both .bike{display:none}
+.road-sim.scenario-both .frontcar,.road-sim.scenario-both .rearcar{display:block}
+.road-sim.scenario-cow .p1,.road-sim.scenario-cow .p2,.road-sim.scenario-cow .frontcar,.road-sim.scenario-cow .pothole,.road-sim.scenario-cow .bike,.road-sim.scenario-cow .rearcar{display:none}
+.road-sim.scenario-cow .cow{display:block}
+.road-sim.scenario-pothole .frontcar,.road-sim.scenario-pothole .cow,.road-sim.scenario-pothole .bike,.road-sim.scenario-pothole .rearcar{display:none}
+.road-sim.scenario-pothole .pothole{display:block}.road-sim.scenario-pothole .p1,.road-sim.scenario-pothole .p2{display:block}
+.sim-metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:16px}
+.sim-metric{padding:16px;border:1px solid #1d3148;border-radius:12px;background:#0d1b2d}.sim-metric strong{display:block;font-size:1.35rem}.sim-metric span{color:#8fa3b8;font-size:.8rem}
+.ai-panel{margin-top:16px;padding:17px 19px;border-left:3px solid #65d9ff;background:#0c2438;border-radius:9px}.ai-title{font-weight:800;margin-bottom:5px}
+.scenario-result{margin-top:20px;padding:24px;border:1px solid #1d3148;border-radius:18px;background:#0d1b2d}.scenario-result h3{margin-bottom:16px}
+.decision-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.decision-card{padding:18px;border:1px solid #263d55;border-radius:12px;background:#0b1725}.decision-card.critical{border-color:#a96839}.decision-icon{font-size:1.8rem}.decision-card h4{margin:8px 0}.decision-card p{color:#aebdcd;font-size:.9rem}.decision-card b{display:block;color:#65d9ff;margin-top:10px;font-size:.85rem}
+.legend{display:flex;flex-wrap:wrap;gap:15px;color:#91a7bb;font-size:.8rem;margin-top:14px}
+@media(max-width:800px){.sim-metrics,.decision-grid{grid-template-columns:1fr 1fr}.road-surface{height:480px}}
+@media(max-width:560px){.sim-metrics,.decision-grid{grid-template-columns:1fr}.road-surface{height:440px}.ego{font-size:36px}}
+@media(prefers-reduced-motion:reduce){.road-sim.running .lane-mark{animation:none}}
+</style>
+<section id="impact">
+  <div class="section-head">
+    <h2>The Big Picture</h2>
+    <p>AI can create major benefits, but responsible use is essential.</p>
+  </div>
+  <div class="stats">
+    <div class="stat"><strong>Faster</strong><span>Automates repetitive work</span></div>
+    <div class="stat"><strong>Smarter</strong><span>Finds patterns in complex data</span></div>
+    <div class="stat"><strong>Safer</strong><span>Can monitor risks and dangerous conditions</span></div>
+  </div>
+</section>
+
+<footer>AI360 — Understanding AI in the real world</footer>
+
+
+
+
+
+
+
+
+<script>
+(() => {
+  const canvas=document.getElementById('driveGame'),ctx=canvas.getContext('2d');
+  const speedEl=document.getElementById('gameSpeed'),actionEl=document.getElementById('gameAction');
+  const detectedEl=document.getElementById('gameDetected'),distanceEl=document.getElementById('gameDistance');
+  const statusEl=document.getElementById('gameStatus');
+  const startBtn=document.getElementById('gameStart'),pauseBtn=document.getElementById('gamePause'),resetBtn=document.getElementById('gameReset');
+  const W=canvas.width,H=canvas.height;
+  let running=false,last=performance.now(),roadOffset=0,speed=0,egoLane=1,targetLane=1,score=0,phase=0,rearGap=40;
+  let obstacles=[];
+
+  const types=[
+    ['car','🚗'],['bike','🏍️'],['auto','🛺'],['truck','🚚'],
+    ['cow','🐄'],['person','🚶'],['pothole','●'],['barrier','🚧']
+  ];
+
+  function laneX(l){return W/2+(l-1)*135;}
+
+  function spawn(y=-120,forceLane=null,forceType=null){
+    const t=forceType || types[Math.floor(Math.random()*types.length)];
+    let l=forceLane===null?Math.floor(Math.random()*3):forceLane;
+    if(forceLane===null){
+      const candidates=[0,1,2].filter(testLane=>!obstacles.some(o=>o.lane===testLane&&Math.abs(o.y-y)<120));
+      if(candidates.length) l=candidates[Math.floor(Math.random()*candidates.length)];
+      else y-=130;
+    }
+    obstacles.push({lane:l,y,type:t[0],icon:t[1],speed:.6+Math.random()*1.1,passed:false});
+  }
+
+  function reset(){
+    running=false;last=performance.now();roadOffset=0;speed=0;egoLane=1;targetLane=1;score=0;phase=0;rearGap=40;
+    obstacles=[];
+    // Deliberately populate the road with varied traffic/hazards.
+    spawn(40,1,'car'); spawn(-120,0,'bike'); spawn(-260,2,'auto');
+    spawn(-400,1,'cow'); spawn(-540,2,'truck'); spawn(-680,0,'pothole');
+    spawn(-820,1,'barrier'); spawn(-960,2,'car');
+    statusEl.textContent='Ready. Start the simulation and watch the AI drive, detect and avoid obstacles automatically.';
+    updateHud();draw();
+  }
+
+  function start(){
+    if(running)return;
+    running=true;last=performance.now();
+    statusEl.textContent='Autonomous mode active: perception, braking and steering are being controlled by the path planner.';
+    requestAnimationFrame(loop);
+  }
+
+  function pause(){
+    running=false;
+    statusEl.textContent='Simulation paused.';
+  }
+
+  function nearestAhead(){
+    const ex=laneX(egoLane),ey=H-105;
+    let best=null, bestD=Infinity;
+    for(const o of obstacles){
+      const dx=Math.abs(laneX(o.lane)-ex),dy=ey-o.y;
+      if(dx<72 && dy>0 && dy<455){
+        const d=Math.max(3,Math.round(dy/5.5));
+        if(d<bestD){bestD=d;best=o;}
+      }
+    }
+    return best?{o:best,d:bestD}:null;
+  }
+
+  function freeLane(l){
+    const ex=laneX(l),ey=H-105;
+    return !obstacles.some(o=>Math.abs(laneX(o.lane)-ex)<55 && Math.abs(o.y-ey)<210);
+  }
+
+  function chooseSafeLane(blockedLane){
+    // Prefer the side with the larger rear gap and clear forward space.
+    const choices=[0,1,2].filter(l=>l!==blockedLane&&freeLane(l));
+    if(!choices.length)return null;
+    // Prefer the lane with the most open space ahead.
+    const clearance=l=>{
+      const x=laneX(l),ey=H-105;
+      return obstacles.reduce((best,o)=>{
+        if(Math.abs(laneX(o.lane)-x)<62 && o.y<ey && o.y>0) return Math.min(best,ey-o.y);
+        return best;
+      },9999);
+    };
+    return choices.sort((a,b)=>clearance(b)-clearance(a))[0];
+  }
+
+  function updateAI(){
+    const hit=nearestAhead();
+    // Simulated rear-traffic gap changes naturally, but becomes tighter during the blocked state.
+    rearGap=28+Math.sin(phase*.9)*7;
+    if(hit){
+      detectedEl.textContent=hit.o.type==='cow'?'Cow':hit.o.type==='pothole'?'Pothole':
+        hit.o.type[0].toUpperCase()+hit.o.type.slice(1);
+      distanceEl.textContent=hit.d+' m';
+
+      if(hit.d<55){
+        const safe=chooseSafeLane(hit.o.lane);
+        if(hit.d<25){
+          if(safe!==null && rearGap>=16){
+            targetLane=safe;
+            actionEl.textContent='STEER';
+            statusEl.textContent='Obstacle too close. AI found a safe lateral gap and is steering away.';
+          }else{
+            speed=Math.max(0,speed-65/30);
+            actionEl.textContent='STOP';
+            statusEl.textContent='Front obstacle + unsafe rear traffic: AI stops and waits for a safe clearance gap.';
+          }
+        }else{
+          speed=Math.max(12,speed-35/30);
+          actionEl.textContent='BRAKE';
+          statusEl.textContent='Obstacle detected within 30 m. AI is braking and evaluating a safe path.';
+          if(hit.d<38){
+            const safe=chooseSafeLane(hit.o.lane);
+            if(safe!==null && rearGap>=16)targetLane=safe;
+          }
+        }
+        return;
+      }
+    }else{
+      detectedEl.textContent='None';distanceEl.textContent='—';
+    }
+
+    // Gradually return toward the centre lane after passing an obstacle.
+    if(targetLane!==1 && Math.random()<.012 && freeLane(1))targetLane=1;
+    speed=Math.min(48,speed+18/30);
+    actionEl.textContent='CRUISE';
+    if(rearGap<15)statusEl.textContent='Rear traffic detected. AI maintains position and avoids sudden manoeuvres.';
+    else statusEl.textContent='Path clear. AI scans a long detection corridor and continuously monitors surrounding traffic.';
+  }
+
+  function updateHud(){
+    speedEl.textContent=Math.round(speed);
+  }
+
+  function drawRoad(){
+    ctx.fillStyle='#8eb0c5';ctx.fillRect(0,0,W,H);
+    ctx.fillStyle='#5f8d4e';ctx.fillRect(0,0,170,H);ctx.fillRect(W-170,0,170,H);
+    ctx.fillStyle='#343a40';ctx.fillRect(170,0,560,H);
+    ctx.strokeStyle='#f3d26b';ctx.lineWidth=5;
+    ctx.beginPath();ctx.moveTo(175,0);ctx.lineTo(175,H);ctx.moveTo(725,0);ctx.lineTo(725,H);ctx.stroke();
+    ctx.strokeStyle='#eef2f4';ctx.lineWidth=5;ctx.setLineDash([48,38]);ctx.lineDashOffset=-roadOffset;
+    ctx.beginPath();ctx.moveTo(307,0);ctx.lineTo(307,H);ctx.moveTo(593,0);ctx.lineTo(593,H);ctx.stroke();ctx.setLineDash([]);
+    for(let y=((roadOffset*1.6)%90)-50;y<H;y+=90){
+      ctx.fillStyle='#a7ad82';ctx.fillRect(35,y,80,7);ctx.fillRect(W-115,y+28,80,7);
+    }
+  }
+
+  function drawVehicle(x,y,icon,ego=false){
+    // Draw vehicles as clean vector shapes instead of emoji/letters.
+    ctx.save();
+    ctx.translate(x,y);
+    if(ego){
+      ctx.shadowColor='rgba(101,217,255,.9)';ctx.shadowBlur=18;
+      ctx.fillStyle='#17b7ff';
+      ctx.beginPath();ctx.roundRect(-20,-38,40,76,10);ctx.fill();
+      ctx.shadowBlur=0;
+      ctx.fillStyle='#dff8ff';ctx.beginPath();ctx.roundRect(-13,-25,26,20,6);ctx.fill();
+      ctx.fillStyle='#082033';ctx.fillRect(-17,24,8,13);ctx.fillRect(9,24,8,13);
+      ctx.strokeStyle='#fff';ctx.lineWidth=3;ctx.beginPath();ctx.roundRect(-24,-42,48,84,12);ctx.stroke();
+      ctx.restore();return;
+    }
+    ctx.shadowColor='rgba(255,255,255,.55)';ctx.shadowBlur=10;
+    let body='#e84b4b', w=27,h=46;
+    if(icon==='🏍️'){body='#ffb52e';w=18;h=48;}
+    if(icon==='🛺'){body='#e7b52b';w=30;h=42;}
+    if(icon==='🚚'){body='#7d8cff';w=34;h=54;}
+    if(icon==='🐄'){body='#8b684e';w=34;h=42;}
+    if(icon==='🚶'){body='#b96cff';w=18;h=42;}
+    ctx.fillStyle=body;ctx.beginPath();ctx.roundRect(-w/2,-h/2,w,h,7);ctx.fill();
+    ctx.shadowBlur=0;
+    if(icon==='🚶'){
+      ctx.fillStyle='#ffd6b0';ctx.beginPath();ctx.arc(0,-18,7,0,Math.PI*2);ctx.fill();
+      ctx.strokeStyle='#f0d';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(0,-10);ctx.lineTo(0,12);ctx.moveTo(0,-3);ctx.lineTo(-10,6);ctx.moveTo(0,-3);ctx.lineTo(10,6);ctx.stroke();
+    } else if(icon==='🐄'){
+      ctx.fillStyle='#fff1d5';ctx.fillRect(-10,-10,20,15);ctx.fillStyle='#222';ctx.fillRect(-7,-7,5,5);ctx.fillRect(3,-3,5,5);
+    } else {
+      ctx.fillStyle='#d9f4ff';ctx.beginPath();ctx.roundRect(-w*.32,-h*.30,w*.64,h*.25,3);ctx.fill();
+      ctx.fillStyle='#111';ctx.fillRect(-w*.48,h*.23,7,9);ctx.fillRect(w*.48-7,h*.23,7,9);
+    }
+    ctx.restore();
+  }
+
+  function draw(){
+    drawRoad();
+    const ex=laneX(egoLane),ey=H-105;
+    // Perception zone
+    ctx.fillStyle='rgba(101,217,255,.055)';
+    ctx.beginPath();ctx.moveTo(ex-22,ey-25);ctx.lineTo(ex-145,45);ctx.lineTo(ex+145,45);ctx.closePath();ctx.fill();
+    obstacles.forEach(o=>{
+      const ox=laneX(o.lane);
+      if(o.y>35 && o.y<H-45){
+        ctx.save();
+        ctx.strokeStyle='rgba(255,245,120,.95)';
+        ctx.lineWidth=3;
+        ctx.shadowColor='rgba(255,245,120,.9)';
+        ctx.shadowBlur=18;
+        ctx.beginPath();ctx.arc(ox,o.y,34,0,Math.PI*2);ctx.stroke();
+        ctx.restore();
+      }
+      drawVehicle(ox,o.y,o.icon);
+    });
+    drawVehicle(ex,ey,'🚙',true);
+
+    ctx.fillStyle='#fff';ctx.font='13px sans-serif';ctx.textAlign='center';
+    ctx.fillText('AI perception / detection zone',ex,58);
+
+    ctx.fillStyle='#0b1826dd';ctx.fillRect(16,16,210,44);
+    ctx.fillStyle='#fff';ctx.font='16px sans-serif';ctx.textAlign='left';
+    ctx.fillText('AUTONOMOUS  •  Score '+score,30,44);
+  }
+
+  function loop(now){
+    if(!running){draw();return;}
+    const dt=Math.min(.04,(now-last)/1000);last=now;phase+=dt;
+
+    updateAI();
+
+    // Steering is autonomous: smoothly move toward target lane.
+    egoLane += (targetLane-egoLane)*Math.min(1,dt*4.5);
+    roadOffset=(roadOffset+speed*dt*4.2)%86;
+
+    // World scrolls toward the ego vehicle.
+    obstacles.forEach(o=>{
+      o.y += (2.0+speed/19)*dt*48 - o.speed;
+    });
+
+    // Traffic collision-avoidance: keep every non-ego road user separated.
+    // Vehicles in the same lane slow down behind the object ahead instead of overlapping.
+    for(let l=0;l<3;l++){
+      const sameLane=obstacles.filter(o=>o.lane===l).sort((a,b)=>b.y-a.y);
+      for(let i=1;i<sameLane.length;i++){
+        const ahead=sameLane[i-1], behind=sameLane[i];
+        const minGap=(ahead.type==='truck'||behind.type==='truck')?92:76;
+        const gap=ahead.y-behind.y;
+        if(gap<minGap){
+          behind.y=ahead.y-minGap;
+          behind.speed=Math.max(behind.speed,ahead.speed+0.15);
+        }
+      }
+    }
+
+    // Prevent side-by-side objects from visually intersecting while changing traffic spacing.
+    for(let i=0;i<obstacles.length;i++){
+      for(let j=i+1;j<obstacles.length;j++){
+        const a=obstacles[i],b=obstacles[j];
+        if(a.lane===b.lane && Math.abs(a.y-b.y)<70){
+          if(a.y>b.y)b.y=a.y-76;
+          else a.y=b.y-76;
+        }
+      }
+    }
+
+    // Remove passed objects and keep the road populated.
+    obstacles=obstacles.filter(o=>{
+      if(o.y>H+70){score+=10;return false;}
+      return true;
+    });
+    if(obstacles.length<9){
+      const farthest=Math.min(...obstacles.map(o=>o.y),-100);
+      spawn(farthest-120-Math.random()*100);
+    }
+
+    // Collision safety fallback.
+    const hit=nearestAhead();
+    if(hit && hit.d<14){
+      speed=0;
+      const safe=chooseSafeLane(hit.o.lane);
+      if(safe!==null && rearGap>=16){
+        targetLane=safe;
+        actionEl.textContent='EMERGENCY STEER';
+        statusEl.textContent='AI prevented a collision by moving into a verified clear lane.';
+      }else{
+        actionEl.textContent='EMERGENCY STOP';
+        statusEl.textContent='No safe escape path. AI remains stopped until traffic clears.';
+      }
+    }
+
+    updateHud();draw();requestAnimationFrame(loop);
+  }
+
+  startBtn.addEventListener('click',start);
+  pauseBtn.addEventListener('click',pause);
+  resetBtn.addEventListener('click',reset);
+  reset();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PATH//AI — Adaptive Path Planning</title>
+  <meta name="description" content="A perception-to-control system that detects vehicles, pedestrians, animals, potholes and road obstructions — then adapts the vehicle path before a collision occurs.">
+  <style>:root{
+  --bg:#070b0e; --panel:#0c1318; --panel2:#101a20; --line:rgba(155,190,198,.14); --text:#edf5f6; --muted:#81929a; --mint:#62e6d0; --cyan:#63c9ff; --red:#ff6170;
+  --amber:#ffb55c; --mono:"DM Mono",monospace; --sans:"Inter",sans-serif;
+}
+*{box-sizing:border-box} html{scroll-behavior:smooth} body{margin:0;background:var(--bg);color:var(--text);font-family:var(--sans);overflow-x:hidden}
+body:before{content:"";position:fixed;inset:0;pointer-events:none;background-image:linear-gradient(rgba(255,255,255,.015) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.015) 1px,transparent 1px);background-size:48px 48px;mask-image:linear-gradient(to bottom,black,transparent 90%);z-index:-2}
+.noise{position:fixed;inset:0;pointer-events:none;opacity:.035;z-index:20;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.8'/%3E%3C/svg%3E")}
+a{color:inherit;text-decoration:none}.nav{height:72px;display:flex;align-items:center;justify-content:space-between;padding:0 4vw;border-bottom:1px solid var(--line);position:sticky;top:0;background:rgba(244,248,247,.88);backdrop-filter:blur(18px);z-index:50}
+.brand{font-family:var(--mono);font-weight:500;letter-spacing:.04em}.brand span{color:var(--mint)}.brand-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--mint);box-shadow:0 0 16px var(--mint);margin-right:9px}
+.nav nav{display:flex;gap:30px;font:12px var(--mono);color:#60757b}.nav nav a:hover{color:var(--mint)}.nav-cta{font:12px var(--mono);border:1px solid var(--line);padding:10px 14px;border-radius:9px}.nav-cta:hover{border-color:var(--mint);color:var(--mint)}
+.hero{min-height:calc(100vh - 72px);display:grid;grid-template-columns:1fr 1fr;align-items:center;padding:7vw 6vw;position:relative;overflow:hidden}.hero-grid{position:absolute;inset:0;background:radial-gradient(circle at 75% 50%,rgba(51,153,173,.14),transparent 32%),radial-gradient(circle at 20% 80%,rgba(55,214,188,.06),transparent 30%)}
+.hero-copy{position:relative;z-index:2;max-width:700px}.eyebrow,.section-kicker{font:11px var(--mono);letter-spacing:.16em;color:var(--mint);margin-bottom:25px}.pulse{width:7px;height:7px;border-radius:50%;display:inline-block;background:var(--mint);box-shadow:0 0 0 5px rgba(98,230,208,.1),0 0 15px var(--mint);margin-right:9px}
+h1,h2{margin:0;line-height:.94;letter-spacing:-.055em;font-weight:800}h1{font-size:clamp(62px,7vw,116px)}h2{font-size:clamp(48px,5.5vw,86px)}em{font-style:normal;color:var(--mint)}
+.hero-lead{font-size:18px;line-height:1.7;color:#aab9be;max-width:590px;margin:34px 0}.hero-actions{display:flex;gap:12px;flex-wrap:wrap}.primary-btn,.ghost-btn{display:inline-flex;align-items:center;gap:28px;padding:15px 18px;border-radius:8px;font:12px var(--mono);transition:.25s}.primary-btn{background:var(--mint);color:#051012;border:1px solid var(--mint)}.primary-btn:hover{transform:translateY(-2px);box-shadow:0 10px 40px rgba(98,230,208,.18)}.ghost-btn{border:1px solid var(--line);color:#53666d}.ghost-btn:hover{border-color:#68838b}
+.hero-stats{display:flex;gap:38px;margin-top:65px}.hero-stats div{display:flex;flex-direction:column;gap:5px}.hero-stats b{font:21px var(--mono)}.hero-stats span{font:9px var(--mono);color:var(--muted);text-transform:uppercase;letter-spacing:.12em}
+.hero-visual{height:620px;position:relative;display:flex;justify-content:center;align-items:center}.hero-road{width:min(390px,75%);height:620px;background:linear-gradient(90deg,#e1e9e7,#f5f8f7 48%,#e1e9e7);border:1px solid var(--line);position:relative;overflow:hidden;box-shadow:0 40px 100px rgba(0,0,0,.4)}.hero-road:before,.hero-road:after{content:"";position:absolute;top:0;bottom:0;width:1px;background:rgba(210,240,245,.16)}.hero-road:before{left:17%}.hero-road:after{right:17%}.lane-mark{position:absolute;top:-30px;height:70px;width:2px;background:#8d9ca1;opacity:.7;animation:roadmove 1.5s linear infinite}.l1{left:50%}.l2{left:83%}.hero-car{position:absolute;left:50%;top:55%;transform:translate(-50%,-50%);width:68px;height:118px;border-radius:15px 15px 11px 11px;background:linear-gradient(140deg,#dfecef,#71818a);z-index:4;box-shadow:0 0 35px rgba(98,230,208,.13)}.hero-car:after{content:"";position:absolute;left:9px;right:9px;top:12px;height:38px;border-radius:8px;background:#0b1820;border:1px solid #49606a}.hero-car span{position:absolute;bottom:10px;left:0;right:0;text-align:center;font:7px var(--mono);color:#1b2a2f}.scan-ring{position:absolute;border:1px dashed rgba(98,230,208,.42);border-radius:50%;left:50%;top:55%;transform:translate(-50%,-50%);animation:pulseRing 2.2s ease-in-out infinite}.ring1{width:220px;height:220px}.ring2{width:390px;height:390px;opacity:.4}.scan-ray{position:absolute;left:50%;top:55%;height:46%;width:1px;background:linear-gradient(to top,rgba(98,230,208,.5),transparent);transform-origin:bottom;z-index:1}.r1{transform:translate(-50%,-100%) rotate(0)}.r2{transform:translate(-50%,-100%) rotate(90deg)}.r3{transform:translate(-50%,-100%) rotate(180deg)}.r4{transform:translate(-50%,-100%) rotate(270deg)}.hero-obstacle{position:absolute;font:7px var(--mono);padding:6px;border:1px solid rgba(255,255,255,.22);background:#1a252a;border-radius:4px;z-index:5}.o1{top:15%;left:62%}.o2{top:43%;left:16%;color:#ffbd73}.o3{top:72%;left:72%;color:#ff7180}.route-line{position:absolute;left:50%;bottom:0;height:45%;width:80px;border-left:2px dashed rgba(98,230,208,.65);transform:translateX(-50%) skewX(-10deg)}
+.telemetry-float{position:absolute;right:0;bottom:8%;width:170px;background:rgba(255,255,255,.94);border:1px solid var(--line);padding:18px;backdrop-filter:blur(10px)}.telemetry-float div{display:flex;justify-content:space-between;border-bottom:1px solid var(--line);padding:9px 0}.telemetry-float div:last-child{border:0}.telemetry-float span{font:8px var(--mono);color:var(--muted)}.telemetry-float strong{font:9px var(--mono);color:var(--mint)}.mini-label{position:absolute;font:9px var(--mono);color:#61757d;letter-spacing:.14em}.top-left{top:5%;left:3%}
+.section{padding:120px 6vw;border-top:1px solid var(--line)}.problem-grid,.system-head,.team-head{display:grid;grid-template-columns:1fr 1fr;gap:8vw}.big-copy{font-size:24px;line-height:1.5;margin:0 0 24px;color:#d3dee1}.muted{color:var(--muted);line-height:1.7;max-width:600px}.condition-grid{display:grid;grid-template-columns:repeat(4,1fr);margin-top:80px;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}.condition{padding:25px 18px;border-right:1px solid var(--line)}.condition:last-child{border:0}.condition-no{font:10px var(--mono);color:var(--mint);display:block;margin-bottom:40px}.condition b{display:block;font-size:15px;margin-bottom:8px}.condition small{color:var(--muted);font-size:11px;line-height:1.5}
+.system-head p,.team-head p{color:var(--muted);line-height:1.7;max-width:480px}.pipeline{display:grid;grid-template-columns:1fr auto 1fr auto 1fr auto 1fr auto 1fr;align-items:stretch;margin-top:75px;border:1px solid var(--line);background:rgba(12,19,24,.65)}.pipeline-step{padding:24px 16px;min-height:135px}.pipeline-step.active{background:linear-gradient(135deg,rgba(98,230,208,.1),transparent)}.pipeline-step span{font:9px var(--mono);color:var(--mint);display:block;margin-bottom:30px}.pipeline-step b{font:10px var(--mono);display:block}.pipeline-step small{font-size:10px;color:var(--muted);display:block;margin-top:8px}.pipeline-arrow{display:flex;align-items:center;color:#71858b;padding:0 4px}
+.sim-head{display:flex;justify-content:space-between;align-items:end;gap:30px}.sim-head p{color:var(--muted);max-width:620px;line-height:1.6}.sim-status{font:10px var(--mono);border:1px solid rgba(98,230,208,.25);color:var(--mint);padding:10px 13px;border-radius:7px;white-space:nowrap}.sim-status span{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--mint);margin-right:8px;box-shadow:0 0 12px var(--mint)}
+.scenario-bar{display:flex;gap:8px;flex-wrap:wrap;margin:35px 0 10px}.scenario{font:11px var(--mono);color:#8ea1a8;background:#ffffff;border:1px solid var(--line);border-radius:8px;padding:10px 13px;cursor:pointer}.scenario:hover{border-color:#49626a}.scenario.active{background:var(--mint);color:#061014;border-color:var(--mint)}
+.sim-shell{display:grid;grid-template-columns:1fr 310px;border:1px solid var(--line);border-radius:16px;overflow:hidden;background:#edf3f1;min-height:680px}.canvas-wrap{position:relative;min-height:680px;background:#e8efed}.canvas-wrap canvas{display:block;width:100%;height:100%;min-height:680px}.direction-label{position:absolute;font:9px var(--mono);letter-spacing:.12em;color:#66818a}.north{top:18px;left:50%;transform:translateX(-50%)}.south{bottom:18px;left:50%;transform:translateX(-50%)}.west{left:20px;top:50%;transform:translateY(-50%) rotate(-90deg)}.east{right:20px;top:50%;transform:translateY(-50%) rotate(90deg)}.sensor-legend{position:absolute;top:18px;left:22px;font:9px var(--mono);color:#55747a}.sensor-legend i{display:inline-block;width:7px;height:7px;border:1px solid var(--mint);border-radius:50%;margin-right:7px}.sim-hud{position:absolute;left:20px;right:20px;display:flex;justify-content:space-between;font:9px var(--mono);color:#60767c}.sim-hud b{color:#d8e4e6;margin-left:7px}.top-hud{top:18px}.bottom-hud{bottom:18px}.bottom-hud button{font:9px var(--mono);background:transparent;border:1px solid var(--line);color:#91a5ab;padding:6px 10px;border-radius:5px;cursor:pointer}.telemetry{border-left:1px solid var(--line);background:linear-gradient(135deg,#ffffff,#edf4f2);padding:28px 25px}.telemetry-title{font-size:15px;font-weight:700;display:flex;justify-content:space-between;align-items:center}.telemetry-title span{font:8px var(--mono);color:var(--mint);border:1px solid rgba(98,230,208,.25);padding:4px 6px;border-radius:4px}.metric{padding:22px 0;border-bottom:1px solid var(--line)}.metric small{font:9px var(--mono);color:#5d747b;display:block;margin-bottom:9px}.metric strong{font:22px var(--mono);letter-spacing:-.04em}.metric strong[data-risk="HIGH"]{color:var(--red)}.metric strong[data-risk="MEDIUM"]{color:var(--amber)}.metric strong[data-risk="LOW"]{color:var(--mint)}.detected{margin-top:26px}.object-list{display:flex;flex-wrap:wrap;gap:6px;margin-top:14px}.object-chip{font:8px var(--mono);padding:6px 7px;border:1px solid var(--line);color:#9fb1b7;border-radius:5px}.sim-note{margin-top:18px;border-left:2px solid var(--mint);padding:13px 16px;color:#83959b;font-size:11px;line-height:1.6;background:rgba(98,230,208,.025)}.sim-note b{color:#d5e1e4}
+.team-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);margin-top:70px;border:1px solid var(--line)}.member{background:#ffffff;padding:30px;display:flex;gap:18px;min-height:145px}.avatar{width:52px;height:52px;border:1px solid rgba(98,230,208,.3);display:grid;place-items:center;color:var(--mint);font:10px var(--mono);flex:none;border-radius:10px;background:rgba(98,230,208,.03)}.member small{font:8px var(--mono);color:#5d747b;letter-spacing:.12em}.member h3{margin:8px 0;font-size:17px}.member p{margin:0;color:var(--muted);font-size:11px}.team-count{font:10px var(--mono);color:var(--mint);align-self:start;border:1px solid rgba(98,230,208,.2);padding:9px 11px;border-radius:6px}
+.closing{padding:150px 6vw;text-align:center;position:relative;overflow:hidden;border-top:1px solid var(--line)}.closing-grid{position:absolute;inset:0;background:radial-gradient(circle at 50% 50%,rgba(98,230,208,.12),transparent 40%);pointer-events:none}.closing h2{position:relative;font-size:clamp(50px,7vw,105px);margin-bottom:45px}.closing .primary-btn{position:relative}
+footer{border-top:1px solid var(--line);padding:25px 6vw;display:flex;justify-content:space-between;font:9px var(--mono);color:#64767c}
+@keyframes roadmove{from{transform:translateY(-90px)}to{transform:translateY(650px)}}@keyframes pulseRing{0%,100%{opacity:.4;transform:translate(-50%,-50%) scale(.96)}50%{opacity:.8;transform:translate(-50%,-50%) scale(1.02)}}
+@media(max-width:950px){.nav nav{display:none}.hero{grid-template-columns:1fr;padding-top:80px}.hero-visual{margin-top:40px}.problem-grid,.system-head,.team-head{grid-template-columns:1fr}.condition-grid{grid-template-columns:1fr 1fr}.pipeline{grid-template-columns:1fr}.pipeline-arrow{display:none}.pipeline-step{border-bottom:1px solid var(--line)}.sim-head{display:block}.sim-status{display:inline-block;margin-top:20px}.sim-shell{grid-template-columns:1fr}.telemetry{border-left:0;border-top:1px solid var(--line)}.team-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:600px){.nav{padding:0 18px}.nav-cta{display:none}.hero,.section,.closing{padding-left:20px;padding-right:20px}.hero{padding-top:60px}.hero-stats{gap:18px;flex-wrap:wrap}.hero-visual{height:500px}.hero-road{height:500px}.condition-grid,.team-grid{grid-template-columns:1fr}.sim-shell,.canvas-wrap,.canvas-wrap canvas{min-height:540px}.telemetry{padding:22px}.scenario{font-size:9px}.big-copy{font-size:19px}footer{flex-direction:column;gap:10px}}
+
+.landing-badge{position:absolute;top:6%;left:6vw;z-index:4;display:inline-flex;align-items:center;gap:9px;font:10px 'DM Mono',monospace;letter-spacing:.13em;color:#147e73;border:1px solid rgba(22,184,164,.22);background:rgba(255,255,255,.8);padding:9px 12px;border-radius:7px}
+.landing-badge span{width:6px;height:6px;border-radius:50%;background:#16b8a4;box-shadow:0 0 12px rgba(22,184,164,.5)}
+.hero{padding-top:120px}.hero-proof{display:flex;gap:8px;flex-wrap:wrap;margin-top:28px}
+.hero-proof span{border:1px solid var(--line);background:rgba(255,255,255,.8);border-radius:7px;padding:8px 10px;font:9px 'DM Mono',monospace;color:#62767d}.hero-proof b{color:#168e81}
+.canvas-wrap{background:#e8efed!important}.telemetry{background:linear-gradient(135deg,#fff,#edf4f2)!important}.scenario{background:#fff}.object-chip{background:#f8fbfa}
+.condition,.pipeline-step,.member{background:rgba(255,255,255,.82)}.closing{background:#edf5f3}
+.ring1{width:260px;height:170px}.ring2{width:430px;height:300px}
+
+/* FINAL DARK THEME */
+.nav{background:rgba(7,11,14,.84);color:var(--text)}
+.nav nav{color:#81929a}.nav-cta{color:#b8c5c9}
+.hero-grid{background:radial-gradient(circle at 75% 50%,rgba(51,153,173,.14),transparent 32%),radial-gradient(circle at 20% 80%,rgba(55,214,188,.06),transparent 30%)}
+.hero-lead{color:#aab9be}.ghost-btn{color:#b8c5c9}
+.hero-road{background:linear-gradient(90deg,#111c22,#0d151a 48%,#111c22);box-shadow:0 40px 100px rgba(0,0,0,.4)}
+.telemetry-float{background:rgba(11,18,22,.90)}
+.big-copy{color:#d3dee1}
+.pipeline{background:rgba(12,19,24,.65)}
+.scenario{background:#0c1318;color:#8ea1a8}
+.sim-shell{background:#0a1116}
+.canvas-wrap{background:#0d151b!important}
+.telemetry{background:linear-gradient(135deg,#0d171d,#0a1014)!important}
+.object-chip{background:#0b1217;color:#9fb1b7}
+.condition,.pipeline-step,.member{background:rgba(12,19,24,.72)}
+.closing{background:#091015}
+.sensor-legend{color:#78929a}.direction-label{color:#78929a}.sim-hud{color:#78929a}.bottom-hud button{color:#91a5ab}
+.landing-badge{display:none!important}.hero{padding-top:7vw}
+.hero-proof span{background:rgba(12,19,24,.75);color:#81929a}.hero-proof b{color:var(--mint)}
+</style>
+</head>
+<body>
+  <div class="noise"></div>
+  <header class="nav">
+    <a class="brand" href="#home"><span class="brand-dot"></span>PATH<span>//</span>AI</a>
+    <nav>
+      <a href="#problem">Problem</a>
+      <a href="#system">System</a>
+      <a href="#simulation">Simulation</a>
+      <a href="#team">Team</a>
+    </nav>
+    <a class="nav-cta" href="#simulation">Run simulation <span>↗</span></a>
+  </header>
+
+  <main>
+    <section class="hero" id="home">
+      <div class="hero-grid"></div>
+      <div class="hero-copy">
+        <div class="eyebrow"><span class="pulse"></span> AUTONOMOUS NAVIGATION / INDIA</div>
+        <h1>Adaptive driving<br><em>for Indian roads.</em></h1>
+        <p class="hero-lead">Adaptive path planning and collision avoidance for autonomous vehicles on unstructured Indian roads.</p>
+        <div class="hero-actions">
+          <a class="primary-btn" href="#simulation">Launch live simulation <span>→</span></a>
+          <a class="ghost-btn" href="#system">Explore the system</a>
+        </div>
+        <div class="hero-proof"><span><b>360°</b> surrounding awareness</span><span><b>REAL-TIME</b> replanning</span><span><b>INDIAN</b> road conditions</span></div><div class="hero-stats">
+          <div><b>04</b><span>directional sensing</span></div>
+          <div><b>360°</b><span>risk awareness</span></div>
+          <div><b>&lt;50ms</b><span>planning target</span></div>
+        </div>
+      </div>
+      <div class="hero-visual">
+        <div class="mini-label top-left">LIVE ROAD MODEL</div>
+        <div class="hero-road">
+          <div class="lane-mark l1"></div><div class="lane-mark l2"></div>
+          <div class="hero-car">
+            <div class="car-glass"></div><span>PATH AI</span>
+          </div>
+          <div class="scan-ring ring1"></div>
+          <div class="scan-ring ring2"></div>
+          <div class="scan-ray r1"></div><div class="scan-ray r2"></div>
+          <div class="scan-ray r3"></div><div class="scan-ray r4"></div>
+          <div class="hero-obstacle o1">CAR</div>
+          <div class="hero-obstacle o2">COW</div>
+          <div class="hero-obstacle o3">POTHOLE</div>
+          <div class="route-line"></div>
+        </div>
+        <div class="telemetry-float">
+          <div><span>RISK</span><strong>LOW</strong></div>
+          <div><span>PATH</span><strong>ADAPTIVE</strong></div>
+          <div><span>SENSING</span><strong>360°</strong></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="problem section" id="problem">
+      <div class="section-kicker">01 / THE PROBLEM</div>
+      <div class="problem-grid">
+        <div>
+          <h2>Indian roads don't<br><em>follow the script.</em></h2>
+        </div>
+        <div>
+          <p class="big-copy">Lane markings disappear. Traffic mixes cars, buses, bikes, autos and animals. Potholes, parked vehicles and sudden crossings turn a predictable road into a dynamic environment.</p>
+          <p class="muted">Our planner continuously reads the scene, estimates risk in every direction and replans a safe path instead of assuming the road will behave like a controlled test track.</p>
+        </div>
+      </div>
+      <div class="condition-grid">
+        <div class="condition"><span class="condition-no">01</span><b>Mixed traffic</b><small>Cars · buses · trucks · bikes · autos</small></div>
+        <div class="condition"><span class="condition-no">02</span><b>Animals & pedestrians</b><small>Cows · dogs · crossings · sudden movement</small></div>
+        <div class="condition"><span class="condition-no">03</span><b>Road damage</b><small>Potholes · debris · uneven surfaces</small></div>
+        <div class="condition"><span class="condition-no">04</span><b>Blocked paths</b><small>Parked vehicles · roadwork · lane closures</small></div>
+      </div>
+    </section>
+
+    <section class="system section" id="system">
+      <div class="section-kicker">02 / SYSTEM ARCHITECTURE</div>
+      <div class="system-head">
+        <h2>See. Understand.<br><em>Replan.</em></h2>
+        <p>Five layers turn raw road observations into a safe vehicle action.</p>
+      </div>
+      <div class="pipeline">
+        <div class="pipeline-step active"><span>01</span><b>PERCEPTION</b><small>Objects + road state</small></div>
+        <div class="pipeline-arrow">→</div>
+        <div class="pipeline-step"><span>02</span><b>SENSOR FUSION</b><small>Combine observations</small></div>
+        <div class="pipeline-arrow">→</div>
+        <div class="pipeline-step"><span>03</span><b>PREDICTION</b><small>Estimate movement</small></div>
+        <div class="pipeline-arrow">→</div>
+        <div class="pipeline-step"><span>04</span><b>PATH PLANNING</b><small>Choose safe corridor</small></div>
+        <div class="pipeline-arrow">→</div>
+        <div class="pipeline-step"><span>05</span><b>CONTROL</b><small>Steer + brake</small></div>
+      </div>
+    </section>
+
+    <section class="simulation section" id="simulation">
+      <div class="section-kicker">03 / LIVE SIMULATION</div>
+      <div class="sim-head">
+        <div>
+          <h2>360° road awareness.</h2>
+          <p>The vehicle is surrounded by a live sensing field. Objects move, cross lanes and trigger replanning.</p>
+        </div>
+        <div class="sim-status"><span></span> ADAPTIVE RESPONSE ACTIVE</div>
+      </div>
+
+      <div class="scenario-bar">
+        <button class="scenario active" data-scenario="mixed">Mixed traffic</button>
+        <button class="scenario" data-scenario="pothole">Pothole + debris</button>
+        <button class="scenario" data-scenario="animal">Animal crossing</button>
+        <button class="scenario" data-scenario="pedestrian">Pedestrian crossing</button>
+        <button class="scenario" data-scenario="blocked">Blocked lane</button>
+        <button class="scenario" data-scenario="roadwork">Roadwork</button>
+        <button class="scenario" data-scenario="oncoming">Oncoming vehicle</button>
+      </div>
+
+      <div class="sim-shell">
+        <div class="canvas-wrap">
+          <canvas id="simCanvas"></canvas>
+          <div class="direction-label north">FRONT</div>
+          <div class="direction-label south">REAR</div>
+          <div class="direction-label west">LEFT</div>
+          <div class="direction-label east">RIGHT</div>
+          <div class="sensor-legend"><i></i> 360° SENSOR FIELD</div>
+          <div class="sim-hud top-hud">
+            <span>SCENE <b id="sceneName">MIXED TRAFFIC</b></span>
+            <span>FRAME <b id="frameCount">0000</b></span>
+          </div>
+          <div class="sim-hud bottom-hud">
+            <span>WASD / ARROWS <b>MANUAL OVERRIDE</b></span>
+            <button id="pauseBtn">PAUSE</button>
+          </div>
+        </div>
+        <aside class="telemetry">
+          <div class="telemetry-title">Decision telemetry <span>LIVE</span></div>
+          <div class="metric"><small>CLOSEST OBJECT</small><strong id="distance">-- m</strong></div>
+          <div class="metric"><small>RISK LEVEL</small><strong id="risk">LOW</strong></div>
+          <div class="metric"><small>VEHICLE SPEED</small><strong id="speed">32 km/h</strong></div>
+          <div class="metric"><small>PLANNER ACTION</small><strong id="action">HOLD LANE</strong></div>
+          <div class="metric"><small>PATH CONFIDENCE</small><strong id="confidence">94%</strong></div>
+          <div class="metric"><small>DECISION LATENCY</small><strong id="latency">28 ms</strong></div>
+          <div class="detected">
+            <div class="telemetry-title">Detected now <span id="objectCount">0</span></div>
+            <div id="objectList" class="object-list"></div>
+          </div>
+        </aside>
+      </div>
+      <div class="sim-note"><b>What the planner is doing:</b> the vehicle does not only look ahead. The 360° field checks front, rear, left and right sectors while moving obstacles update their trajectories. The planner can slow down, hold, brake or shift the target path to avoid detected hazards.</div>
+    </section>
+
+    <section class="team section" id="team">
+      <div class="section-kicker">04 / THE TEAM</div>
+      <div class="team-head">
+        <div><h2>Built by <em>six.</em></h2><p>Replace the names and roles below with your actual team details before your final submission.</p></div>
+        <div class="team-count">06 / MEMBERS</div>
+      </div>
+      <div class="team-grid">
+        <article class="member"><div class="avatar">01</div><div><small>TEAM LEAD / AI</small><h3>Team Member 01</h3><p>Path planning & system design</p></div></article>
+        <article class="member"><div class="avatar">02</div><div><small>COMPUTER VISION</small><h3>Team Member 02</h3><p>Detection & perception</p></div></article>
+        <article class="member"><div class="avatar">03</div><div><small>SIMULATION</small><h3>Team Member 03</h3><p>Scenario & vehicle simulation</p></div></article>
+        <article class="member"><div class="avatar">04</div><div><small>FRONTEND</small><h3>Team Member 04</h3><p>Dashboard & visualization</p></div></article>
+        <article class="member"><div class="avatar">05</div><div><small>RESEARCH</small><h3>Team Member 05</h3><p>Datasets & road analysis</p></div></article>
+        <article class="member"><div class="avatar">06</div><div><small>INTEGRATION</small><h3>Team Member 06</h3><p>Testing & system integration</p></div></article>
+      </div>
+    </section>
+
+    <section class="closing">
+      <div class="closing-grid"></div>
+      <div class="section-kicker">05 / THE OBJECTIVE</div>
+      <h2>Don't make the road<br><em>predictable.</em><br>Make the vehicle adaptive.</h2>
+      <a class="primary-btn" href="#simulation">Run the simulation again <span>↗</span></a>
+    </section>
+  </main>
+
+  <footer><span>PATH//AI</span><span>Adaptive Path Planning · Collision Avoidance · Indian Roads</span></footer>
+  <script>
+const canvas=document.getElementById("simCanvas"),ctx=canvas.getContext("2d");
+let W=0,H=0,dpr=1,frame=0,paused=false,scenario="mixed",manual={x:0,y:0};
+const TAU=Math.PI*2;
+const ui={distance:document.getElementById("distance"),risk:document.getElementById("risk"),speed:document.getElementById("speed"),action:document.getElementById("action"),confidence:document.getElementById("confidence"),latency:document.getElementById("latency"),objectCount:document.getElementById("objectCount"),objectList:document.getElementById("objectList"),sceneName:document.getElementById("sceneName"),frameCount:document.getElementById("frameCount")};
+const configs={mixed:{name:"MIXED TRAFFIC",objects:["car","bus","bike","auto","parked"]},pothole:{name:"POTHOLE + DEBRIS",objects:["pothole","debris","car","bike","parked"]},animal:{name:"ANIMAL CROSSING",objects:["cow","dog","bike","car","auto"]},pedestrian:{name:"PEDESTRIAN CROSSING",objects:["pedestrian","pedestrian","car","bike","auto"]},blocked:{name:"BLOCKED LANE",objects:["parked","parked","car","bus","debris"]},roadwork:{name:"ROADWORK",objects:["cone","cone","barrier","worker","car"]},oncoming:{name:"ONCOMING VEHICLE",objects:["oncoming","oncoming","bike","auto","parked"]}};
+let ego={x:0,y:0,targetX:0},obstacles=[];
+const lanes=[-1,0,1],laneX=l=>W/2+l*W*.19;
+const SENSOR_RANGE_M=60;
+const ROAD_LEFT_TOP=.13,ROAD_RIGHT_TOP=.87,ROAD_LEFT_BOTTOM=.03,ROAD_RIGHT_BOTTOM=.97;
+const isCross=o=>["cow","dog","pedestrian","worker"].includes(o.type);
+const isStatic=o=>["parked","pothole","debris","barrier","cone"].includes(o.type);
+
+function resize(){
+  const r=canvas.getBoundingClientRect();dpr=Math.min(devicePixelRatio||1,2);
+  W=r.width;H=r.height;canvas.width=W*dpr;canvas.height=H*dpr;ctx.setTransform(dpr,0,0,dpr,0,0);
+  ego.x=W/2;ego.y=H*.64;ego.targetX=ego.x;resetObjects();
+}
+window.addEventListener("resize",resize);
+
+function resetObjects(){
+  // Keep the initial scene clear of the ego vehicle.
+  const safeSpawn=[
+    {lane:-1,y:H*.08},{lane:1,y:H*.18},{lane:-1,y:-90},
+    {lane:1,y:-170},{lane:0,y:-270},{lane:0,y:-390}
+  ];
+  obstacles=configs[scenario].objects.map((type,i)=>{
+    if(isCross({type})){
+      return {type,x:i%2?W*.10:W*.90,y:H*(.12+.12*i),lane:null,
+        phase:Math.random()*TAU,speed:.6+Math.random()*.25,dir:i%2?1:-1,active:true};
+    }
+    const s=safeSpawn[i%safeSpawn.length];
+    return {type,x:laneX(s.lane),y:s.y-Math.floor(i/6)*220,lane:s.lane,
+      phase:Math.random()*TAU,speed:.6+Math.random()*.35,dir:i%2?1:-1,active:true};
+  });
+}
+
+function setScenario(s){
+  scenario=s;ui.sceneName.textContent=configs[s].name;resetObjects();
+  document.querySelectorAll(".scenario").forEach(b=>b.classList.toggle("active",b.dataset.scenario===s));
+}
+document.querySelectorAll(".scenario").forEach(b=>b.addEventListener("click",()=>setScenario(b.dataset.scenario)));
+document.getElementById("pauseBtn").addEventListener("click",e=>{paused=!paused;e.target.textContent=paused?"RESUME":"PAUSE"});
+
+window.addEventListener("keydown",e=>{
+  const k=e.key.toLowerCase();
+  if(["a","d","w","s","arrowleft","arrowright","arrowup","arrowdown"].includes(k))e.preventDefault();
+  manual.x=(k==="a"||k==="arrowleft"?-1:k==="d"||k==="arrowright"?1:0);
+  manual.y=(k==="w"||k==="arrowup"?-1:k==="s"||k==="arrowdown"?1:0);
+});
+window.addEventListener("keyup",e=>{
+  if(["a","d","w","s","arrowleft","arrowright","arrowup","arrowdown"].includes(e.key.toLowerCase()))manual={x:0,y:0};
+});
+
+function drawRoad(){
+  ctx.fillStyle="#0d151b";ctx.fillRect(0,0,W,H);ctx.fillStyle="#111c23";
+  ctx.beginPath();ctx.moveTo(W*.13,0);ctx.lineTo(W*.87,0);ctx.lineTo(W*.97,H);ctx.lineTo(W*.03,H);ctx.closePath();ctx.fill();
+  ctx.strokeStyle="rgba(130,180,190,.13)";[W*.31,W*.50,W*.69].forEach(x=>{ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke()});
+  for(let y=((frame*1.8)%64)-64;y<H;y+=64){
+    ctx.setLineDash([24,30]);ctx.strokeStyle="rgba(145,190,198,.25)";
+    [W*.405,W*.595].forEach(x=>{ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x,y+28);ctx.stroke()});
+  }ctx.setLineDash([]);
+}
+
+function drawSensor(){
+  const rx=Math.min(W,H)*.39,ry=Math.min(W,H)*.43,x=ego.x,y=ego.y;
+  const g=ctx.createRadialGradient(x,y,20,x,y,Math.max(rx,ry));
+  g.addColorStop(0,"rgba(98,230,208,.12)");g.addColorStop(.7,"rgba(98,230,208,.035)");g.addColorStop(1,"rgba(98,230,208,0)");
+  ctx.fillStyle=g;ctx.beginPath();ctx.ellipse(x,y,rx,ry,0,0,TAU);ctx.fill();
+  ctx.strokeStyle="rgba(98,230,208,.48)";ctx.setLineDash([5,5]);ctx.lineWidth=1.2;ctx.beginPath();ctx.ellipse(x,y,rx,ry,0,0,TAU);ctx.stroke();ctx.setLineDash([]);
+  [[0,-1],[1,0],[0,1],[-1,0]].forEach(([dx,dy])=>{ctx.strokeStyle="rgba(98,230,208,.16)";ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+dx*rx*.9,y+dy*ry*.9);ctx.stroke()});
+}
+
+/* ---------- Collision model ---------- */
+function obstacleBox(o){
+  if(o.type==="bus") return {x:22,y:36};
+  if(o.type==="oncoming") return {x:20,y:30};
+  if(o.type==="car") return {x:19,y:27};
+  if(o.type==="parked") return {x:20,y:29};
+  if(o.type==="auto") return {x:17,y:25};
+  if(o.type==="bike") return {x:9,y:19};
+  if(o.type==="barrier") return {x:29,y:11};
+  if(o.type==="cone") return {x:13,y:18};
+  if(o.type==="worker") return {x:14,y:20};
+  if(o.type==="cow") return {x:24,y:22};
+  if(o.type==="pedestrian"||o.type==="dog") return {x:13,y:20};
+  if(o.type==="pothole") return {x:27,y:12};
+  if(o.type==="debris") return {x:18,y:13};
+  return {x:20,y:28};
+}
+const EGO_HALF_W=27,EGO_HALF_H=45,SAFE_X=12,SAFE_Y=16;
+
+function predictObstacle(o,t){
+  let x=o.x,y=o.y;
+  if(isCross(o)){
+    x+=o.dir*(o.type==="pedestrian"?1.25:o.type==="cow"?0.72:0.78)*t;
+    const period=W+160;
+    while(x<-80)x+=period;while(x>W+80)x-=period;
+    y+=Math.sin(o.phase+t*.02)*.2;
+  }else{
+    y+=(o.type==="oncoming"?1.55:o.speed*(.9+Math.sin(o.phase+t*.02)*.15))*t;
+  }
+  return{x,y};
+}
+function rectCollision(ex,ey,px,py,b){
+  return Math.abs(ex-px)<EGO_HALF_W+b.x+SAFE_X &&
+         Math.abs(ey-py)<EGO_HALF_H+b.y+SAFE_Y;
+}
+function roadBoundsAtY(y){
+  const q=Math.max(0,Math.min(1,y/Math.max(1,H)));
+  return {
+    left:W*(ROAD_LEFT_TOP+(ROAD_LEFT_BOTTOM-ROAD_LEFT_TOP)*q),
+    right:W*(ROAD_RIGHT_TOP+(ROAD_RIGHT_BOTTOM-ROAD_RIGHT_TOP)*q)
+  };
+}
+function onRoadX(x,y){
+  const b=roadBoundsAtY(y);
+  const margin=EGO_HALF_W+8;
+  return x>=b.left+margin && x<=b.right-margin;
+}
+function clampToRoad(x,y){
+  const b=roadBoundsAtY(y);
+  const margin=EGO_HALF_W+10;
+  return Math.max(b.left+margin,Math.min(b.right-margin,x));
+}
+function onRoadPath(fromX,toX){
+  const steps=Math.max(8,Math.ceil(Math.abs(toX-fromX)/1.2));
+  for(let i=0;i<=steps;i++){
+    const q=i/steps,xx=fromX+(toX-fromX)*q;
+    if(!onRoadX(xx,ego.y)) return false;
+  }
+  return true;
+}
+
+function pointSafe(x,t){
+  if(!onRoadX(x,ego.y))return false;
+  for(const o of obstacles){
+    const p=predictObstacle(o,t),b=obstacleBox(o);
+    if(p.y<ego.y-520||p.y>ego.y+180)continue;
+    if(rectCollision(x,ego.y,p.x,p.y,b))return false;
+  }
+  return true;
+}
+
+/*
+  Rolling-horizon gap planner.
+  It searches actual lateral positions across the road, not only lane centers.
+  The horizon is deliberately short enough that the planner can replan as
+  traffic moves, so a later obstacle does not incorrectly block a usable gap.
+*/
+function planGap(){
+  const minX=W*.16,maxX=W*.84;
+  const step=Math.max(8,Math.min(14,W/75));
+  const candidates=[];
+  for(let x=minX;x<=maxX;x+=step)candidates.push(x);
+
+  // Add exact gap candidates beside nearby obstacles.
+  obstacles.forEach(o=>{
+    const b=obstacleBox(o);
+    [o.x-(b.x+EGO_HALF_W+SAFE_X+8),o.x+(b.x+EGO_HALF_W+SAFE_X+8)].forEach(x=>{
+      if(x>=minX&&x<=maxX)candidates.push(x);
+    });
+  });
+  candidates.push(ego.x,laneX(-1),laneX(0),laneX(1));
+
+  const horizon=105;
+  let best=null,bestScore=Infinity;
+  for(const x of candidates){
+    let safe=true;
+    for(let t=0;t<=horizon;t+=3){
+      if(!pointSafe(x,t)){safe=false;break}
+    }
+    if(!safe)continue;
+
+    // Prefer small lateral motion, but prefer a real gap when the current
+    // lane is threatened.
+    let score=Math.abs(x-ego.x);
+    const centerPenalty=Math.abs(x-W/2)*0.035;
+    score+=centerPenalty;
+    const centerSafe=pointSafe(W/2,24);
+    if(!centerSafe && Math.abs(x-W/2)>22)score-=10;
+    if(manual.x)score+=Math.abs(x-laneX(manual.x))*0.03;
+    if(score<bestScore){bestScore=score;best=x;}
+  }
+  return best;
+}
+
+function immediateMoveClear(fromX,toX){
+  if(!onRoadPath(fromX,toX))return false;
+  const steps=Math.max(8,Math.ceil(Math.abs(toX-fromX)/1.2));
+  for(let i=0;i<=steps;i++){
+    const q=i/steps,xx=fromX+(toX-fromX)*q;
+    for(const o of obstacles){
+      const p=predictObstacle(o,q),b=obstacleBox(o);
+      if(rectCollision(xx,ego.y,p.x,p.y,b))return false;
+    }
+  }
+  return true;
+}
+
+function currentThreats(){
+  return obstacles.map(o=>({...o,d:Math.hypot(o.x-ego.x,o.y-ego.y)}))
+    .filter(o=>o.d<Math.min(W,H)*.52).sort((a,b)=>a.d-b.d);
+}
+
+let currentPlan={targetX:W/2,safe:true,gap:false};
+
+function chooseLane(){
+  const tx=planGap();
+  if(tx===null)return{lane:0,targetX:ego.x,safe:false,gap:false};
+  let nearestLane=0;
+lanes.forEach(l=>{if(Math.abs(laneX(l)-tx)<Math.abs(laneX(nearestLane)-tx))nearestLane=l;});
+  return{lane:nearestLane,targetX:tx,safe:true,gap:Math.abs(tx-laneX(nearestLane))>20};
+}
+
+function drawPath(){
+  const tx=currentPlan.targetX;
+  ctx.strokeStyle=currentPlan.safe?"rgba(98,230,208,.95)":"rgba(255,97,112,.9)";
+  ctx.lineWidth=4;ctx.setLineDash([11,9]);ctx.beginPath();ctx.moveTo(ego.x,ego.y);
+  ctx.bezierCurveTo(ego.x+(tx-ego.x)*.25,ego.y-100,tx,ego.y-190,tx,28);ctx.stroke();ctx.setLineDash([]);
+  ctx.fillStyle=currentPlan.safe?"#62e6d0":"#ff6170";ctx.beginPath();ctx.arc(tx,33,4,0,TAU);ctx.fill();
+}
+
+function rr(x,y,w,h,r){ctx.beginPath();ctx.roundRect(x,y,w,h,r)}
+function drawEgo(){
+  ctx.save();ctx.translate(ego.x,ego.y);ctx.shadowBlur=26;ctx.shadowColor="rgba(98,230,208,.28)";
+  const g=ctx.createLinearGradient(-25,-45,25,45);g.addColorStop(0,"#e8f0f2");g.addColorStop(1,"#71848d");
+  ctx.fillStyle=g;rr(-27,-45,54,90,12);ctx.fill();ctx.shadowBlur=0;ctx.fillStyle="#10232b";rr(-19,-31,38,27,7);ctx.fill();
+  ctx.fillStyle="#dffefa";ctx.font="7px 'DM Mono'";ctx.textAlign="center";ctx.fillText("PATH AI",0,34);ctx.restore();
+}
+function drawObstacle(o){
+  ctx.save();ctx.translate(o.x,o.y);
+  if(o.type==="pothole"){ctx.fillStyle="#4d5c63";ctx.beginPath();ctx.ellipse(0,0,26,13,0,0,TAU);ctx.fill()}
+  else if(o.type==="debris"){ctx.fillStyle="#a87951";ctx.rotate(.2);ctx.fillRect(-13,-8,26,16)}
+  else if(o.type==="cone"){ctx.fillStyle="#ed8c42";ctx.beginPath();ctx.moveTo(0,-18);ctx.lineTo(12,15);ctx.lineTo(-12,15);ctx.closePath();ctx.fill()}
+  else if(o.type==="barrier"){ctx.fillStyle="#dbaa63";ctx.fillRect(-27,-9,54,18)}
+  else if(isCross(o)){ctx.fillStyle=o.type==="worker"?"#e99b46":o.type==="cow"?"#b27b50":"#5a9dca";ctx.beginPath();ctx.arc(0,-13,7,0,TAU);ctx.fill();ctx.strokeStyle=ctx.fillStyle;ctx.lineWidth=6;ctx.beginPath();ctx.moveTo(0,-5);ctx.lineTo(0,13);ctx.stroke()}
+  else{let w=o.type==="bus"?34:o.type==="auto"?27:o.type==="bike"?14:31,h=o.type==="bus"?65:o.type==="bike"?35:52;
+    ctx.fillStyle=o.type==="oncoming"?"#d45b67":o.type==="parked"?"#77878d":o.type==="bus"?"#4d8698":o.type==="auto"?"#bb8e50":"#668f9b";
+    rr(-w/2,-h/2,w,h,7);ctx.fill();ctx.fillStyle="#dbe8ea";rr(-w*.32,-h*.34,w*.64,h*.24,4);ctx.fill()}
+  ctx.restore();ctx.font="7px 'DM Mono'";ctx.textAlign="center";ctx.fillStyle="#76929b";ctx.fillText(o.type.toUpperCase(),o.x,o.y-28);
+}
+
+function updateObjects(){
+  obstacles.forEach(o=>{
+    o.phase+=.02;
+    if(isCross(o)){
+      // Crossing objects keep an independent straight-line trajectory.
+      o.x+=o.dir*(o.type==="pedestrian"?1.25:o.type==="cow"?0.72:0.78);
+      if(o.x<-80)o.x=W+80;if(o.x>W+80)o.x=-80;
+    }else{
+      o.y+=(o.type==="oncoming"?1.55:o.speed*(.9+Math.sin(o.phase)*.15));
+    }
+    if(o.y>H+100)o.y=-100-Math.random()*100;
+  });
+}
+
+function analyze(){
+  const threats=currentThreats(),c=threats[0],plan=currentPlan;
+  let risk="LOW",speed=42,action=plan.safe?(plan.gap?"GAP NAVIGATION":"HOLD LANE"):"BRAKE / WAIT",conf=97;
+  if(!plan.safe){risk="HIGH";speed=0;action="STOP — NO SAFE GAP";conf=99}
+  else if(c){
+    const sideNear=Math.abs(c.x-ego.x)<150&&Math.abs(c.y-ego.y)<170;
+    const cm=sensorDistanceM(c);
+    if(cm<=60 && (sideNear||c.y<=ego.y)){risk=cm<25?"HIGH":"MEDIUM";speed=cm<25?14:28;action=plan.gap?"DIVERT — 60 m RESPONSE":"REACT — 60 m RANGE";conf=98}
+    else{action="MONITOR 360°";speed=42;conf=96}
+  }
+  ui.distance.textContent=c?Math.max(1,Math.round(sensorDistanceM(c)))+" m":"— m";
+  ui.risk.textContent=risk;ui.risk.dataset.risk=risk;ui.speed.textContent=speed+" km/h";
+  ui.action.textContent=action;ui.confidence.textContent=conf+"%";
+  ui.latency.textContent=(24+Math.round(Math.random()*15))+" ms";
+  ui.objectCount.textContent=threats.length;
+  ui.objectList.innerHTML=threats.slice(0,8).map(o=>`<span class="object-chip">${o.type.toUpperCase()}</span>`).join("")||'<span class="object-chip">CLEAR</span>';
+}
+
+
+function emergencySeparate(){
+  // Final visual safety net: if an obstacle is already inside the ego envelope,
+  // immediately move the ego to the nearest currently clear position.
+  let collision=false;
+  for(const o of obstacles){
+    const p={x:o.x,y:o.y},b=obstacleBox(o);
+    if(rectCollision(ego.x,ego.y,p.x,p.y,b)){collision=true;break}
+  }
+  if(!collision)return;
+  const candidates=[];
+  for(let x=W*.16;x<=W*.84;x+=4){
+    let safe=true;
+    for(const o of obstacles){
+      const b=obstacleBox(o);
+      if(rectCollision(x,ego.y,o.x,o.y,b)){safe=false;break}
+    }
+    if(safe)candidates.push(x);
+  }
+  if(candidates.length){
+    candidates.sort((a,b)=>Math.abs(a-ego.x)-Math.abs(b-ego.x));
+    ego.x=candidates[0];
+  }
+}
+
+function emergencySeparate(){
+  for(const o of obstacles){
+    const b=obstacleBox(o);
+    if(!rectCollision(ego.x,ego.y,o.x,o.y,b))continue;
+    let best=null,bestD=Infinity;
+    for(let x=W*.16;x<=W*.84;x+=4){
+      let safe=true;
+      for(const other of obstacles){
+        const ob=obstacleBox(other);
+        if(rectCollision(x,ego.y,other.x,other.y,ob)){safe=false;break}
+      }
+      if(safe&&onRoadX(x,ego.y)&&Math.abs(x-ego.x)<bestD){best=x;bestD=Math.abs(x-ego.x)}
+    }
+    if(best!==null)ego.x=best;
+  }
+}
+function sensorGeometry(){
+  // The oval represents a 60 m detection envelope.
+  return {rx:Math.min(W,H)*.39, ry:Math.min(W,H)*.43, rangeM:SENSOR_RANGE_M};
+}
+function sensorDistanceM(o){
+  const {rx,ry,rangeM}=sensorGeometry();
+  const dx=(o.x-ego.x)/rx, dy=(o.y-ego.y)/ry;
+  return Math.sqrt(dx*dx+dy*dy)*rangeM;
+}
+function insideSensor(o){
+  return sensorDistanceM(o)<=SENSOR_RANGE_M;
+}
+function isVehicle(o){
+  return ["car","bus","auto","bike","oncoming"].includes(o.type);
+}
+function frontThreat(o){
+  if(isStatic(o) && o.type!=="parked") return false;
+  if(o.y > ego.y+90) return false;
+  const {rx,ry}=sensorGeometry();
+  const dx=(o.x-ego.x)/rx, dy=(o.y-ego.y)/ry;
+  const inOval=dx*dx+dy*dy <= 1.0;
+  const touchesFront=o.y <= ego.y-ry*.96 && Math.abs(o.x-ego.x) < rx*.95;
+  // React at the full 60 m sensor range, with an extra front-edge check.
+  return inOval || touchesFront;
+}
+function activeForwardThreats(){
+  return obstacles.filter(frontThreat).sort((a,b)=>sensorDistanceM(a)-sensorDistanceM(b));
+}
+function chooseEvasiveTarget(threats){
+  if(!threats.length) return null;
+  const primary=threats[0];
+  // Move away from the threat's lateral side, then validate with the full
+  // collision planner. This is triggered as soon as a vehicle enters the oval
+  // or reaches the front sensor perimeter.
+  const preferred = primary.x >= ego.x ? laneX(-1) : laneX(1);
+  const alternate = primary.x >= ego.x ? laneX(1) : laneX(-1);
+  const candidates=[preferred,alternate,laneX(0)];
+  for(const x of candidates){
+    if(onRoadPath(ego.x,x) && immediateMoveClear(ego.x,x) && pointSafe(x,0) && pointSafe(x,18) && pointSafe(x,42)) return x;
+  }
+  const gap=planGap();
+  return gap===null?ego.x:gap;
+}
+function updateEgo(){
+  const threats=activeForwardThreats();
+  const plan=chooseLane();
+
+  // Once the obstacle has been crossed and is behind the ego vehicle, return
+  // to the nearest normal lane. The return is still checked before every step.
+  const obstacleStillAhead=threats.some(o=>o.y <= ego.y+55);
+  let targetX=plan.targetX;
+  let evasive=false;
+
+  if(threats.length){
+    const ev=chooseEvasiveTarget(threats);
+    if(ev!==null){targetX=ev;evasive=true;}
+  }else if(!obstacleStillAhead){
+    const nearestLane=lanes.reduce((best,l)=>
+      Math.abs(laneX(l)-ego.x)<Math.abs(laneX(best)-ego.x)?l:best,0);
+    const laneTarget=laneX(nearestLane);
+    if(immediateMoveClear(ego.x,laneTarget) && pointSafe(laneTarget,24)) targetX=laneTarget;
+  }
+
+  currentPlan={...plan,targetX,gap:plan.gap||evasive};
+  const dx=targetX-ego.x;
+  const maxStep=evasive?3.2:2.65;
+  const next=ego.x+Math.max(-maxStep,Math.min(maxStep,dx*.09));
+
+  if(onRoadPath(ego.x,next) && immediateMoveClear(ego.x,next) && pointSafe(next,18)){
+    ego.x=next;
+  }else{
+    // Search for a nearby safe position rather than crossing through the threat.
+    let moved=false;
+    for(let offset=1;offset<=18&&!moved;offset++){
+      for(const dir of [-1,1]){
+        const alt=ego.x+dir*offset*2;
+        if(alt<W*.16||alt>W*.84)continue;
+        if(onRoadPath(ego.x,alt) && immediateMoveClear(ego.x,alt) && pointSafe(alt,18)){
+          ego.x=alt;moved=true;break;
+        }
+      }
+    }
+    if(!moved)ego.targetX=ego.x;
+  }
+  ego.y=H*.64+Math.sin(frame*.02)*1.2;
+  // Hard road-boundary constraint: the ego vehicle is never allowed to
+  // leave the drivable road surface, even during emergency avoidance.
+  ego.x=clampToRoad(ego.x,ego.y);
+  ego.targetX=clampToRoad(ego.targetX,ego.y);
+  emergencySeparate();
+  // Emergency separation can move laterally; clamp once more after it.
+  ego.x=clampToRoad(ego.x,ego.y);
+  analyze();
+}
+function loop(){
+  if(!paused){frame++;updateObjects();updateEgo()}
+  drawRoad();drawPath();obstacles.forEach(drawObstacle);drawSensor();drawEgo();
+  ui.frameCount.textContent=String(frame%10000).padStart(4,"0");requestAnimationFrame(loop);
+}
+resize();setScenario("mixed");loop();
+
+</script>
+</body>
+</html>
